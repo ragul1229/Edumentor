@@ -1,7 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { uploadNote } from "../controllers/noteController.js";
-
+import { uploadNote, getNotes, deleteNote } from "../controllers/noteController.js";
 
 const router = express.Router();
 
@@ -12,7 +11,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// THIS FIELD NAME MUST MATCH FRONTEND
+// Routes
 router.post("/upload", upload.single("notesFile"), uploadNote);
+router.get("/", getNotes);
+router.delete("/:id", deleteNote); // ✅ DELETE route
 
 export default router;
