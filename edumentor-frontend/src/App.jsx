@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import AuthPage from "./pages/AuthPage";
+import { useState, useEffect } from "react";
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  // optional: sync state if localStorage changes
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) setToken(storedToken);
@@ -15,13 +16,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={token ? <Navigate to="/dashboard" /> : <AuthPage setToken={setToken} />}
-        />
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage setToken={setToken} />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected route */}
         <Route
           path="/dashboard"
-          element={token ? <Dashboard /> : <Navigate to="/" />}
+          element={token ? <Dashboard /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>

@@ -1,61 +1,53 @@
 import { useState } from "react";
 import axios from "axios";
 
-function NotesUpload() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-
-  const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
+const NotesUpload = ({ setSummary }) => {
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false); // ← loading state
 
   const handleUpload = async () => {
-    if (!selectedFile) return alert("Please select a file first");
-    setUploading(true);
+    if (!file) return alert("Please select a file");
 
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    formData.append("notesFile", file);
 
     try {
+      setLoading(true); // start loading
       const res = await axios.post(
         "http://localhost:5000/api/notes/upload",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-      alert(res.data.message);
-      setSelectedFile(null);
+
+      setSummary(res.data.summary); // send summary to Dashboard
     } catch (err) {
-      console.error(err.response?.data || err.message);
+      console.error(err);
       alert(err.response?.data?.message || "Upload failed");
     } finally {
-      setUploading(false);
+      setLoading(false); // stop loading
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md w-96 flex flex-col gap-4">
-      <h2 className="text-xl font-semibold text-gray-700">Upload Your Notes</h2>
-
-      <input
-        type="file"
-        accept=".pdf,.doc,.docx"
-        onChange={handleFileChange}
-        className="border border-gray-300 p-2 rounded"
-      />
-
-      {selectedFile && (
-        <p className="text-gray-600 text-sm">Selected file: {selectedFile.name}</p>
-      )}
-
+    <div>
+      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
       <button
         onClick={handleUpload}
-        disabled={uploading}
-        className={`bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition ${
-          uploading ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
+        disabled={loading} // prevent multiple clicks
       >
-        {uploading ? "Uploading..." : "Upload"}
+        {loading ? "Summarizing..." : "Upload & Summarize"}
       </button>
+
+      {/* Optional spinner */}
+      {loading && (
+        <div className="mt-2 flex items-center">
+          <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-2 text-blue-600">Generating summary...</span>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default NotesUpload;

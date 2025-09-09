@@ -1,16 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function RegisterForm({ setUser }) {
+function RegisterForm({ setToken }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
     try {
       const res = await axios.post("http://localhost:5000/api/auth/register", {
         name,
@@ -19,49 +18,47 @@ export default function RegisterForm({ setUser }) {
       });
 
       console.log("Register success:", res.data);
-      setUser({ id: res.data.userId, name, email });
-      alert(res.data.message);
+
+      // Save token in localStorage
+      localStorage.setItem("token", res.data.token);
+      if (setToken) setToken(res.data.token);
+
+      // Redirect to dashboard
+      navigate("/login");
     } catch (err) {
       console.error("Register error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+      alert(err.response?.data?.message || "Registration failed");
     }
   };
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={handleRegister}>
+    <form onSubmit={handleRegister} className="flex flex-col gap-3">
       <input
         type="text"
-        placeholder="Full Name"
+        placeholder="Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        required
+        className="p-2 border rounded"
       />
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        required
+        className="p-2 border rounded"
       />
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        required
+        className="p-2 border rounded"
       />
-      <button
-        type="submit"
-        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
-        disabled={loading}
-      >
-        {loading ? "Registering..." : "Register"}
+      <button type="submit" className="bg-indigo-600 text-white p-2 rounded">
+        Register
       </button>
     </form>
   );
 }
+
+export default RegisterForm;
