@@ -1,53 +1,76 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
-const NotesUpload = ({ setSummary }) => {
+function NotesUpload({ setSummary, setNoteId }) {
   const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false); // ← loading state
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e) => setFile(e.target.files[0]);
 
   const handleUpload = async () => {
-    if (!file) return alert("Please select a file");
+    if (!file) return alert("Please select a file!");
 
     const formData = new FormData();
-    formData.append("notesFile", file);
+    formData.append("note", file);
 
     try {
-      setLoading(true); // start loading
+      setUploading(true);
+      const token = localStorage.getItem("token");
       const res = await axios.post(
         "http://localhost:5000/api/notes/upload",
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
-      setSummary(res.data.summary); // send summary to Dashboard
+      console.log("Upload success:", res.data);
+      setSummary(res.data.summary);   // show summary immediately
+      setNoteId(res.data.note._id);   // store noteId for quiz
+      alert("File uploaded successfully!");
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Upload failed");
+      console.error("Upload failed:", err.response?.data || err.message);
+      alert("Upload failed. Please login again if the issue persists.");
     } finally {
-      setLoading(false); // stop loading
+      setUploading(false);
     }
   };
 
   return (
-    <div>
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center space-y-4">
+      <h2 className="text-xl font-semibold text-blue-600">📤 Upload Your Notes</h2>
+
+      {/* Drag & Drop / File Input */}
+      <label className="w-full border-2 border-dashed border-blue-300 p-6 rounded-lg text-center cursor-pointer hover:border-blue-400 transition">
+        {file ? (
+          <p className="text-gray-700 font-medium">{file.name}</p>
+        ) : (
+          <p className="text-gray-400">
+            Drag & drop your file here, or click to select
+          </p>
+        )}
+        <input
+          type="file"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </label>
+
+      {/* Upload Button */}
       <button
         onClick={handleUpload}
-        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
-        disabled={loading} // prevent multiple clicks
+        disabled={uploading}
+        className={`w-full bg-blue-500 text-white py-2 rounded-lg font-medium shadow hover:bg-blue-600 transition ${
+          uploading ? "opacity-60 cursor-not-allowed" : ""
+        }`}
       >
-        {loading ? "Summarizing..." : "Upload & Summarize"}
+        {uploading ? "Uploading..." : "Upload"}
       </button>
-
-      {/* Optional spinner */}
-      {loading && (
-        <div className="mt-2 flex items-center">
-          <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="ml-2 text-blue-600">Generating summary...</span>
-        </div>
-      )}
     </div>
   );
-};
+}
 
 export default NotesUpload;

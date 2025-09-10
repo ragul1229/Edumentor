@@ -1,19 +1,13 @@
 import express from "express";
-import multer from "multer";
 import { uploadNote, getNotes, deleteNote } from "../controllers/noteController.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ dest: "uploads/" });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-});
-
-const upload = multer({ storage });
-
-// Routes
-router.post("/upload", upload.single("notesFile"), uploadNote);
-router.get("/", getNotes);
-router.delete("/:id", deleteNote); // ✅ DELETE route
+router.post("/upload", verifyToken, upload.single("note"), uploadNote);
+router.get("/", verifyToken, getNotes);
+router.delete("/:id", verifyToken, deleteNote);
 
 export default router;

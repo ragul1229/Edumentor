@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function RegisterForm({ setToken }) {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState(""); // renamed
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ function RegisterForm({ setToken }) {
     e.preventDefault();
     try {
       const res = await axios.post("http://localhost:5000/api/auth/register", {
-        name,
+        username, // ✅ must match backend
         email,
         password,
       });
@@ -23,7 +23,7 @@ function RegisterForm({ setToken }) {
       localStorage.setItem("token", res.data.token);
       if (setToken) setToken(res.data.token);
 
-      // Redirect to dashboard
+      // Redirect to login or dashboard
       navigate("/login");
     } catch (err) {
       console.error("Register error:", err.response?.data || err.message);
@@ -35,10 +35,11 @@ function RegisterForm({ setToken }) {
     <form onSubmit={handleRegister} className="flex flex-col gap-3">
       <input
         type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="Username"
+        value={username} // ✅ renamed
+        onChange={(e) => setUsername(e.target.value)}
         className="p-2 border rounded"
+        required
       />
       <input
         type="email"
@@ -46,6 +47,7 @@ function RegisterForm({ setToken }) {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="p-2 border rounded"
+        required
       />
       <input
         type="password"
@@ -53,8 +55,9 @@ function RegisterForm({ setToken }) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         className="p-2 border rounded"
+        required
       />
-      <button type="submit" className="bg-indigo-600 text-white p-2 rounded">
+      <button type="submit" className="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">
         Register
       </button>
     </form>

@@ -75,15 +75,20 @@ const truncatedText = inputText.length > maxLength ? inputText.substring(0, maxL
 
 
 // Get all notes
+// controllers/noteController.js
 export const getNotes = async (req, res) => {
   try {
-    const notes = await Note.find({}).sort({ createdAt: -1 });
+    const userId = req.user?.id; // must come from auth middleware
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const notes = await Note.find({ user: userId }).sort({ createdAt: -1 });
     res.status(200).json(notes);
   } catch (err) {
     console.error("GetNotes error:", err);
     res.status(500).json({ message: "Error fetching notes" });
   }
 };
+
 
 // Delete note
 export const deleteNote = async (req, res) => {
