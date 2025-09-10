@@ -1,1 +1,10 @@
 @import "tailwindcss";
+/* For consistent card styles */
+.card {
+  @apply bg-white/80 border border-gray-200 p-6 rounded-2xl shadow-xl 
+         backdrop-blur-md transition-all duration-500 hover:shadow-2xl hover:-translate-y-1;
+}
+
+.card-title {
+  @apply text-xl font-semibold text-blue-600 mb-4 flex items-center gap-2;
+}

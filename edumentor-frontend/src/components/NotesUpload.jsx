@@ -7,37 +7,44 @@ function NotesUpload({ setSummary, setNoteId }) {
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
 
-  const handleUpload = async () => {
-    if (!file) return alert("Please select a file!");
+ const handleUpload = async () => {
+  if (!file) return alert("Please select a file!");
 
-    const formData = new FormData();
-    formData.append("note", file);
+  const formData = new FormData();
+  formData.append("note", file);
 
-    try {
-      setUploading(true);
-      const token = localStorage.getItem("token");
-      const res = await axios.post(
-        "http://localhost:5000/api/notes/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  try {
+    setUploading(true);
 
-      console.log("Upload success:", res.data);
-      setSummary(res.data.summary);   // show summary immediately
-      setNoteId(res.data.note._id);   // store noteId for quiz
-      alert("File uploaded successfully!");
-    } catch (err) {
-      console.error("Upload failed:", err.response?.data || err.message);
-      alert("Upload failed. Please login again if the issue persists.");
-    } finally {
-      setUploading(false);
-    }
-  };
+    const token = localStorage.getItem("token");
+    const res = await axios.post(
+      "http://localhost:5000/api/notes/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("Upload success:", res.data);
+
+    // Show summary immediately
+    setSummary(res.data.summary);
+
+    // Pass noteId to parent to trigger QuizSection reset
+    setNoteId(res.data.note._id);
+
+    alert("File uploaded successfully!");
+  } catch (err) {
+    console.error("Upload failed:", err.response?.data || err.message);
+    alert("Upload failed. Please login again if the issue persists.");
+  } finally {
+    setUploading(false);
+  }
+};
+
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-center space-y-4">
